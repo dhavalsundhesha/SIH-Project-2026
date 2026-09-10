@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-dharo-bg text-dharo-text;
+}
+
+.gold-btn {
+  @apply bg-gradient-to-b from-dharo-goldLight to-dharo-gold text-dharo-bg font-bold rounded-lg
+         hover:brightness-105 active:brightness-95 transition disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.panel {
+  @apply bg-dharo-panel border border-dharo-border rounded-xl;
+}
