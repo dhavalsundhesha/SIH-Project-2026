@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # DHAROHAR — Bharat Guardian
 
 Full-stack educational game platform: explore Indian states, collect artifacts,
@@ -57,3 +58,6 @@ Visit **http://localhost:3000**.
   (states, artifacts, quizzes, missions, awards, stories) without touching user accounts.
 - Mittu AI gracefully shows a friendly error if `CLOUD_AI_API_KEY` isn't set yet —
   the rest of the app works fully without it.
+=======
+# SIH-Project-2026
+>>>>>>> 47ba7fb230f8de19a9f5608fa08cd40012390407
