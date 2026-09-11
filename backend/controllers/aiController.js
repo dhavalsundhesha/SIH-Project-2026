@@ -1,27 +1,43 @@
-const axios = require("axios");
-
-const AI = () => axios.create({ baseURL: process.env.AI_SERVICE_URL, timeout: 30000 });
-
-// POST /api/ai/mittu-chat  { message, history }
-// "Mittu AI" — the friendly in-app guide/mascot students can chat with.
-exports.mittuChat = async (req, res, next) => {
+exports.mittuChat = async (req, res) => {
   try {
-    const { message, history } = req.body;
-    if (!message) return res.status(400).json({ message: "message is required" });
+    const { message, history = [] } = req.body;
 
-    const { data } = await AI().post("/mittu-chat", {
-      message,
-      history: history || [],
-      guardian_type: req.user?.guardianType || null,
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        message: "Message is required",
+      });
+    }
+
+    const response = await fetch(
+      `${process.env.AI_SERVICE_URL}/mittu/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+          history,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Mittu AI Service Error:", data);
+
+      return res.status(response.status).json(data);
+    }
+
+    return res.json(data);
+
+  } catch (error) {
+
+    console.error("Mittu Chat Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to generate Mittu response",
     });
-    res.json(data);
-  } catch (err) {
-    if (err.response) {
-      return res.status(err.response.status).json({ message: err.response.data?.detail || "Mittu AI failed to respond" });
-    }
-    if (err.code === "ECONNREFUSED" || err.code === "ECONNABORTED") {
-      return res.status(503).json({ message: "Mittu AI service is unavailable right now." });
-    }
-    next(err);
   }
 };
