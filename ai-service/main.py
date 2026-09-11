@@ -1,18 +1,31 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from routers import mittu
 
-app = FastAPI(title="Dharohar AI Service", version="1.0.0")
-
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-app.include_router(mittu.router, tags=["mittu"])
+from routers.mittu import router as mittu_router
+from routers.quiz import router as quiz_router
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok", "service": "dharohar-ai-service",
-            "cloud_ai_configured": bool(os.getenv("CLOUD_AI_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))}
+app = FastAPI(
+    title="DHAROHAR AI Service",
+    description="AI service for DHAROHAR learning platform",
+    version="1.0.0"
+)
+
+
+app.include_router(
+    mittu_router,
+    prefix="/mittu"
+)
+
+
+app.include_router(
+    quiz_router,
+    prefix="/quiz"
+)
+
+
+@app.get("/")
+def root():
+    return {
+        "service": "DHAROHAR AI Service",
+        "status": "running"
+    }

@@ -1,42 +1,39 @@
-import logging
-from typing import List, Optional
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from prompts.mittu_prompt import SYSTEM_PROMPT, build_user_prompt
-from services.llm_client import generate_text, AIServiceNotConfiguredError, AIServiceUnavailableError
+from services.mittu_llm_client import chat_with_mittu
 
-logger = logging.getLogger("dharohar.mittu")
 router = APIRouter()
-
-
-class ChatTurn(BaseModel):
-    role: str  # "user" | "assistant"
-    content: str
 
 
 class MittuRequest(BaseModel):
     message: str
-    history: List[ChatTurn] = []
-    guardian_type: Optional[str] = None
+    history: list = Field(default_factory=list)
 
 
-class MittuResponse(BaseModel):
-    reply: str
+@router.post("/")
+async def mittu_chat(request: MittuRequest):
 
+    if not request.message.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Message is required"
+        )
 
-@router.post("/mittu-chat", response_model=MittuResponse)
-def mittu_chat(payload: MittuRequest):
-    user_prompt = build_user_prompt(
-        payload.message,
-        [t.dict() for t in payload.history],
-        payload.guardian_type,
-    )
     try:
-        reply = generate_text(SYSTEM_PROMPT, user_prompt, max_tokens=400)
-    except AIServiceNotConfiguredError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except AIServiceUnavailableError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        answer = chat_with_mittu(
+            request.message,
+            request.history
+        )
 
-    return MittuResponse(reply=reply)
+        return {
+            "answer": answer
+        }
+
+    except Exception as error:
+        print("Mittu AI Error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate Mittu response"
+        )
